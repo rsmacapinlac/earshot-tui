@@ -13,72 +13,52 @@ not a background service.
 [Launch app]
     │
     ▼
-[Connect screen] ← PRIMARY entry point
-    │
-    ├── One device registered → auto-select
-    ├── Multiple devices registered → pick from list
-    └── No devices registered → guided first-time setup
-                │
-                └── Auto-scan common mount paths (/media/, /Volumes/, etc.)
-                    Detect earshot device → propose hostname as device name
-                    User confirms or edits name → device registered
+[Preflight check] ← silent if all pass; errors exit with actionable message
     │
     ▼
-[Scan device]
+[Config check]
     │
-    ├── New recordings found → [Disposition screen]
-    │       │
-    │       │  Act on each recording in priority order:
-    │       ├── [d] download → queued for processing (in chosen order)
-    │       ├── [s] skip     → ignored this session
-    │       ├── [X] delete   → confirm (Huh inline) → removed from device + device DB updated
-    │       ├── [a] download all → queues all remaining
-    │       └── [alt+↑/↓] reorder → change processing priority
-    │               │
-    │               ▼
-    │           [Processing] ← auto-starts after download
-    │               │  Progress bar per recording, overall queue progress
-    │               │  [C] Cancel available throughout
-    │               │
-    │               └── Complete → show processed list → select to open in $EDITOR
+    ├── config.json valid → continue
+    └── config.json missing or incomplete → [Setup wizard]
+            │
+            └── Device source (auto-scan or manual entry)
+                    │
+                    └── Config written → continue
     │
-    └── No new recordings → "All caught up." → [Library] (secondary)
-```
-
-## Secondary Journey: Revisit a Recording
-
-The user comes back to a previously processed recording to listen and
-identify speakers.
-
-```
-[Library view]
+    ▼
+[Device check] ← verify first device source in config.json is accessible
     │
-    └── Select recording
-            │
-            ▼
-        [Recording detail]
-            │
-            ├── [P] Play audio inline
-            ├── [O] Open transcript in $EDITOR
-            ├── [R] Rename speakers  ← only shown if 2 speakers detected
-            │       │
-            │       ├── Speaker 1: [____________]
-            │       └── Speaker 2: [____________]
-            │               │
-            │               └── Saves → rewrites .md in place
-            │
-            └── [D] Delete local audio  ← to save disk space, confirm first
+    ├── Accessible → [Import screen]
+    └── Not accessible → [Library] ← user can still review past recordings
+                              │
+                              └── [i] import → [Import screen]
+                                      │
+                                      └── Device error shown inline if
+                                          device still not accessible
+    │
+    ▼
+[Import screen]
+    │
+    ├── [space] toggle folder selection
+    ├── [i] import → downloads selected folders (progress inline)
+    ├── [c] cancel → stops active download
+    ├── [s] switch device → validates device before switching
+    └── [l] library → [Library]
+    │
+    ▼
+[Library] ← main screen
+    │
+    ├── [space] select downloaded/failed/interrupted folders
+    ├── [p] process → transcription runs inline
+    ├── [enter] on completed folder → opens transcript in $EDITOR
+    ├── [i] import → [Import screen]
+    └── [q] quit
 ```
 
 ## Screen Inventory
 
-| Screen             | Entry point                              | Exit                        |
-|--------------------|------------------------------------------|-----------------------------|
-| Connect            | App launch                               | Device selected             |
-| First-time setup   | No registered devices                    | Device registered → Connect |
-| Device list        | Multiple registered devices              | Device selected             |
-| Disposition        | New recordings found after scan          | All acted on → Processing   |
-| Processing         | Download confirmed                       | Complete / Cancelled        |
-| Library            | No new recordings, or from any screen    | Recording detail / Connect  |
-| Recording detail   | Select recording in library              | Library                     |
-| Rename speakers    | [R] on recording detail (2 speakers only)| Recording detail            |
+| Screen       | Entry point                                        | Exit                  |
+|--------------|----------------------------------------------------|-----------------------|
+| Setup wizard | config.json missing or incomplete                  | Config written → device check |
+| Import       | Device accessible on launch, or [i] from Library   | [l] library → Library |
+| Library      | Device not accessible on launch, or [l] from Import | Import / quit         |

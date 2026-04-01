@@ -3,57 +3,57 @@
 ## Overview
 
 After connecting a device, the app scans for new recordings and presents
-them to the user for disposition. The user acts on each recording individually,
-in their preferred priority order.
+them to the user for import. The user acts on each folder individually
+from the import screen.
 
 ## Recording States (local)
 
-| State       | Description                                                  |
-|-------------|--------------------------------------------------------------|
-| new         | Present on device, not yet seen by the TUI                   |
-| downloaded  | Copied to local storage, queued for processing               |
-| processing  | Transcription/diarization in progress                        |
-| processed   | Transcript generated successfully                            |
-| failed      | Processing attempted but failed                              |
-| interrupted | Processing was cancelled or app closed mid-process           |
-| skipped     | User chose not to download this session                      |
+| State       | Description                                                  | Persisted |
+|-------------|--------------------------------------------------------------|-----------|
+| new         | Present on device, not yet acted on by the TUI               | No — derived at scan time |
+| downloaded  | Copied to local storage, queued for processing               | Yes — `status.json` created |
+| processing  | Transcription in progress                                    | Yes — recovery target on next launch |
+| completed   | Transcript generated successfully                            | Yes |
+| failed      | Processing attempted but failed                              | Yes — offer retry |
+| interrupted | App closed mid-processing                                    | Yes — offer retry on next launch |
+
+State is persisted in a `status.json` file within each recording's local folder:
+
+```
+~/.local/share/earshot-tui/recordings/
+  2026-03-31_09-14-22/
+    status.json
+    recording.opus    ← present if downloaded
+    transcript.md     ← present if completed
+```
+
+```json
+{
+  "status": "completed",
+  "device": "Pi4-Earshot",
+  "recorded_at": "2026-03-31T09:14:22Z",
+  "duration": 222,
+  "downloaded_at": "2026-03-31T11:00:00Z",
+  "completed_at": "2026-03-31T11:05:14Z"
+}
+```
+
+There is no `skipped` state. Recordings the user does not import remain on
+the device and are re-surfaced on the next session.
 
 ## Discovery
 
-- REC-1: On device connection, the app scans the device for all `.opus`
-  recordings and cross-references against the local database.
-- REC-2: Recordings not previously seen are surfaced as `new`.
-- REC-3: New recordings are presented as a list showing: timestamp,
-  duration. Sorted by most recent first by default.
-- REC-4: The user may reorder the list to set processing priority before
-  acting on recordings. Reordering uses `alt+↑` / `alt+↓` on the focused
-  row. The list component does not support drag-to-reorder.
-- REC-5: Previously seen recordings are not re-prompted but are accessible
-  in the library.
-
-## Disposition
-
-For each new recording, the user chooses one of three actions:
-
-- REC-6: **[D] Download** — copy the `.opus` file to local storage. After
-  all dispositions are set, processing begins automatically in chosen order.
-- REC-7: **[S] Skip** — record as skipped; file remains on the device.
-  Skipped recordings may be re-encountered if still on the device next session.
-- REC-8: **[X] Delete from device** — requires confirmation (see
-  ../ux-standards.md §4). Removes `.opus` file from device and updates the
-  earshot SQLite database on the device. This is a firm requirement — the
-  device DB must be updated to prevent earshot from behaving incorrectly.
-
-Additional:
-- REC-9: **[A] Download all** — queues all remaining undecided recordings
-  for download in current list order.
+- REC-1: On device connection, the app scans the device for all recording
+  folders and cross-references against the local recordings directory.
+- REC-2: Folders not previously imported are surfaced as `new` on the import
+  screen.
+- REC-3: New folders are presented showing: timestamp (derived from folder
+  name), recording count, total duration. Sorted most recent first.
+- REC-4: Previously imported folders are not re-prompted on the import screen
+  but are accessible in the library.
 
 ## Post-Download: Device Cleanup
 
-- REC-10: After a recording is downloaded and processed, the user may
-  delete the local audio file to save space. This is a per-recording,
-  explicit action — not automatic.
-- REC-11: Deleting local audio does not affect the transcript or recording
-  state in the local database.
-- REC-12: The device copy of a downloaded recording is left untouched
-  unless the user explicitly deletes it (REC-8).
+- REC-5: The device copy of a downloaded recording is left untouched. There
+  is no delete-from-device action in v1.
+- REC-6: Deleting local audio files is deferred to v2.

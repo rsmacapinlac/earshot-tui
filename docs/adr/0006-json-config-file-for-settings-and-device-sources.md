@@ -1,4 +1,4 @@
-# ADR-0007: JSON Config File for Settings and Device Sources
+# ADR-0006: JSON Config File for Settings and Device Sources
 
 **Status:** Accepted
 
@@ -24,8 +24,6 @@ Move all user-editable settings and device source paths to a JSON file at
 
 ```json
 {
-  "huggingface_token": "hf_...",
-  "setup_complete": true,
   "device_sources": {
     "Pi4-Earshot": "/run/media/ritchie/EARSHOT"
   }
@@ -36,9 +34,20 @@ Move all user-editable settings and device source paths to a JSON file at
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `huggingface_token` | string | Token used by pyannote.audio to download gated models |
-| `setup_complete` | bool | Set to `true` after the first-run setup wizard finishes |
-| `device_sources` | object | Map of **device name → host mount path**; each entry is a registered earshot device |
+| `device_sources` | object | Map of **device name → host mount path**; each entry is a registered earshot device. At least one entry required. |
+
+### Minimum valid config
+
+At least one `device_sources` entry must be present for the app to function.
+If `config.json` does not exist or `device_sources` is absent or empty, the
+app launches the setup wizard before proceeding. See setup-wizard.md.
+
+Transcripts are written to the same folder as their recording — there is no
+configurable destination (see output.md).
+
+There is no `setup_complete` flag — config validity is determined by inspecting
+the fields directly. There is no `huggingface_token` field — speaker diarization
+is in the backlog (see docs/backlog.md).
 
 `device_sources` is keyed by the device's **human-readable name** (the hostname
 read from the device's `preferred_hostname` file, or derived at registration
@@ -51,10 +60,9 @@ must add the path manually or run the scan flow.
 
 ## Consequences
 
-- The SQLite `config` table and `devices` table are no longer required and have
-  been removed from the schema (migration version 2).
-- SQLite (`earshot-tui.db`) now stores **only recording state**: download paths,
-  processing status, transcript paths, speaker names, and timestamps.
+- SQLite is not used. Recording state is stored in per-recording `status.json`
+  files (see recordings.md).
+- `config.json` is the only persistent app state outside of recording folders.
 - Device sources are version-controlled friendly — users can commit or back up
   `config.json` without including recording history.
 - No fallback when source path is missing: the app exits with an error and

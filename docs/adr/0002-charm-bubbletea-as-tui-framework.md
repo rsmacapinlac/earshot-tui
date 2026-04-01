@@ -5,7 +5,7 @@
 ## Context
 
 earshot-tui has a well-defined set of distinct screens with clear transitions
-between them (connect → disposition → processing → library → recording detail).
+between them (connect → import → processing → library → recording detail).
 The UX standards require keyboard-first navigation, a persistent footer showing
 available actions, progress bars for long-running operations, and a UI that
 remains responsive during background processing (see ../ux-standards.md).

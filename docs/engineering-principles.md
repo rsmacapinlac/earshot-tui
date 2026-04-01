@@ -11,11 +11,11 @@ When a decision is unclear, check here first.
 
 ## 1. Fail at the Gate, Not in the Field
 
-All external dependencies — Python version, ffmpeg, HuggingFace token, model
-availability — must be verified at startup before the user enters any workflow.
-A user who downloads three recordings and then hits a missing `ffmpeg` error
-during processing has lost trust in the app. Dependency failures must surface
-before the user invests time.
+All external dependencies — Python version, ffmpeg, model availability — must
+be verified at startup before the user enters any workflow. A user who downloads
+three recordings and then hits a missing `ffmpeg` error during processing has
+lost trust in the app. Dependency failures must surface before the user invests
+time.
 
 **Guards against:** Silent failures surfacing at the worst possible moment.
 
@@ -46,7 +46,7 @@ reproduce across environments.
 
 ## 3. User Data Is Never at Risk
 
-No operation leaves the user's local database, transcripts, or audio files in
+No operation leaves the user's transcripts, audio files, or status records in
 an inconsistent state. Every write operation that can fail midway must be
 atomic. The earshot device database is never written to without explicit,
 confirmed user intent.
@@ -55,12 +55,11 @@ confirmed user intent.
 irreplaceable.
 
 **In practice:**
-- File writes use a temp file + rename pattern (atomic on POSIX)
-- Database writes that span multiple rows use transactions
-- A partial download is never marked `downloaded` — the status is set only
-  after the file is fully written and verified
-- Writes to the earshot device `earshot.db` happen only on explicit delete
-  actions (REC-7, REC-8), never speculatively
+- All file writes use a temp file + rename pattern (atomic on POSIX) — this
+  applies to `config.json`, `status.json`, and `transcript.md`
+- A partial download is never marked `downloaded` — `status.json` is written
+  only after the file is fully written and verified
+- The earshot device filesystem is read-only from the TUI's perspective
 
 ---
 
@@ -111,9 +110,9 @@ failures with no diagnostic path.
 
 Go never parses unstructured stderr from the Python processor. Only lines
 explicitly matching the `PROGRESS:` protocol are acted upon. Everything else
-is written to the debug log and ignored. PyTorch, pyannote, and HuggingFace
-libraries produce unpredictable, version-dependent stderr output that must
-not influence application behaviour.
+is written to the debug log and ignored. PyTorch and HuggingFace libraries
+produce unpredictable, version-dependent stderr output that must not influence
+application behaviour.
 
 **Guards against:** Library version-dependent fragility in the progress
 reporting path.
@@ -123,23 +122,30 @@ reporting path.
 - All other stderr lines are written to the debug log (see Principle 11)
 - `processor.py` suppresses library warnings at the Python level where
   possible (`warnings.filterwarnings`, logging configuration)
+
 - The protocol is documented in ADR-0003 and treated as part of the API
 
 ---
 
-## 7. First Run Is a Defined Feature
+## 7. Preflight Runs on Every Launch
 
-The first-run experience — Python detection, venv creation, model download,
-HuggingFace token collection, license acceptance — is a user experience, not
-an installation side effect. It requires its own screen, real progress
-indicators, clear explanations for each step, and specific recovery paths
-when something goes wrong.
+On every launch, before entering any screen, the app runs a silent preflight
+check in sequence:
 
-**Guards against:** Abandonment before the app proves its value.
+1. `ffmpeg` present on `$PATH`
+2. Python 3.10–3.12 present on `$PATH`
+3. venv exists and is healthy (if not: create it and run `pip install`)
+4. faster-whisper `base` model downloaded (if not: download ~150MB with progress)
 
-> **Status: Undefined.** The specific UX flow, screen design, and step
-> sequence for first run has not yet been designed. This is a required feature
-> for v1 and must be resolved before implementation begins. See OQ-13.
+If all checks pass, the preflight is invisible — the app proceeds directly to
+the connect screen. If any check fails, a specific, actionable error is shown
+and the app does not proceed (see Principle 1 and Principle 10).
+
+Steps 3 and 4 may show progress on first launch or after a broken environment.
+No user input is ever required during preflight.
+
+**Guards against:** Abandonment before the app proves its value; silent
+failures surfacing mid-workflow.
 
 ---
 
@@ -155,10 +161,11 @@ fails, or presents stale state as current.
 trust in the app.
 
 **In practice:**
-- On launch, recordings in `processing` state are transitioned to
-  `interrupted` and the user is notified (PROC-20)
+- On launch, the app scans `AppDirs.Data()/recordings/` for any folder whose
+  `status.json` has `"status": "processing"` and rewrites it to `"interrupted"`;
+  the user is notified (PROC-20)
 - Partial downloads are detected (file size vs. expected size) and discarded;
-  the recording returns to `new` state
+  the folder's `status.json` is removed and the recording returns to `new` state
 - A broken venv (failed pip install) is detected at startup and triggers
   a clean rebuild, not a silent failure
 
@@ -169,7 +176,7 @@ trust in the app.
 `requirements.txt` is a pinned, tested lockfile — not a wish list. It is
 validated on every supported platform before being embedded in a release
 binary. Loose version pins (`>=`) are not permitted for direct dependencies.
-PyTorch and pyannote have a documented history of subtle cross-version
+PyTorch and faster-whisper have a documented history of subtle cross-version
 incompatibilities.
 
 **Guards against:** Cross-platform dependency failures that reproduce only

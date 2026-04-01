@@ -2,9 +2,8 @@
 
 ## Overview
 
-Processing converts a downloaded `.opus` recording into a speaker-labeled
-transcript. All processing runs locally on the user's computer. Processing
-starts automatically after recordings are downloaded — no manual trigger needed.
+Processing converts a downloaded `.opus` recording into a timestamped
+transcript. All processing runs locally on the user's computer.
 
 ## Pipeline
 
@@ -12,49 +11,17 @@ starts automatically after recordings are downloaded — no manual trigger neede
 .opus file
     → decode audio
     → transcribe (local model) → timestamped segments
-    → diarize → speaker count + labeled segments
-    → merge transcription + diarization
     → write Markdown transcript
 ```
 
 ## Transcription
 
-- PROC-1: Processing begins automatically once a recording reaches
-  `downloaded` state. No user action required.
-- PROC-2: Recordings are processed in the order the user chose during
-  disposition.
+- PROC-1: Processing is manually triggered by the user from the library
+  screen. The user selects folders and presses `[p] process`.
+- PROC-2: Folders are transcribed in the order selected, most recent first.
 - PROC-3: Transcription runs locally — no audio is sent to any external
   service.
 - PROC-4: Transcription produces segment-level timestamps.
-
-## Speaker Diarization
-
-- PROC-5: Diarization runs after transcription and detects the number of
-  distinct speakers in the recording.
-- PROC-6: For v1, detection supports up to 2 speakers. If more than 2
-  speakers are present, segments are collapsed into 2 buckets. This
-  limitation is noted in the transcript output (see output.md).
-- PROC-7: If only 1 speaker is detected, no speaker labels or renaming
-  options are shown. The transcript reads as a single voice.
-- PROC-8: Speaker renaming is optional, per-recording, and available only
-  when 2 speakers are detected. It is not offered during or immediately
-  after processing — the user must listen to the recording first.
-
-## Speaker Renaming
-
-- PROC-9: The user initiates renaming from the recording detail screen after
-  listening to the audio.
-- PROC-10: Renaming prompts for both speaker names:
-  ```
-  Speaker 1: [____________]
-  Speaker 2: [____________]
-  ```
-- PROC-11: On confirmation, the app rewrites the `.md` transcript file in
-  place, replacing all instances of "Speaker 1" / "Speaker 2" with the
-  chosen names.
-- PROC-12: Speaker names are stored per-recording in the local database.
-  They do not carry over to other recordings.
-- PROC-13: The user may re-rename speakers at any time after processing.
 
 ## Progress and Cancellation
 
@@ -68,8 +35,8 @@ starts automatically after recordings are downloaded — no manual trigger neede
 ## Completion
 
 - PROC-21: When the processing queue is complete, the app displays a summary
-  list of all recordings just processed with their status (processed/failed).
-- PROC-22: The user selects any processed recording from the summary to open
+  list of all recordings just completed with their status (completed/failed).
+- PROC-22: The user selects any completed recording from the summary to open
   its transcript in `$EDITOR`. Multiple transcripts can be opened in sequence.
 - PROC-23: From the summary, the user can also navigate to the library or
   connect another device.

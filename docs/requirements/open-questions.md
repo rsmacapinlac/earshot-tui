@@ -11,30 +11,18 @@
 
 ## Processing
 
-- OQ-5: Should the user be able to select model size, or is one model
-  baked in for v1? (ADR-0004 defaults to `base` but leaves this open)
 - OQ-7: Should inaudible or low-confidence segments appear in the transcript
   with a marker (e.g., `[inaudible]`) or be omitted?
+- OQ-14: When a folder contains multiple `.opus` files, are they concatenated
+  and transcribed as a single audio stream, or transcribed individually and
+  merged into one `transcript.md`? This affects the processor contract
+  (ADR-0003) and timestamp continuity in the output.
 
 ## Output
 
 - OQ-8: Should transcripts include a per-segment confidence score?
-- OQ-9: Is the default output directory (`~/earshot-tui/`) the right choice,
-  or should it be configurable on first run?
-
-## First Run
-
-- OQ-13: The first-run experience is an undefined feature that must be
-  designed before implementation begins. It must cover: Python detection and
-  version validation, venv creation, dependency installation, model download,
-  HuggingFace token collection, and model license acceptance. Each step needs
-  a screen design, progress indication, and a specific recovery path on
-  failure. See engineering-principles.md §7.
 
 ## Future Considerations
 
-- OQ-10: Drop folder / watch folder support (v2?): should `.opus` files
-  manually copied to a folder be processable without a connected device?
-- OQ-11: Speaker profiles across recordings (v2?): should naming "Speaker 1"
-  as "Alice" on one recording offer to pre-fill on future recordings from the
-  same device?
+- OQ-10: Drop folder / watch folder support: should `.opus` files manually
+  copied to a folder be processable without a connected device?
