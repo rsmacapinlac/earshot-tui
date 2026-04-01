@@ -1,6 +1,6 @@
 # earshot-tui
 
-A terminal interface for processing [earshot](https://github.com/rsmacapinlac/earshot) recordings locally. Connect your earshot device, download recordings, and get speaker-labeled transcripts — all without sending audio to an external service.
+A terminal interface for processing [earshot](https://github.com/rsmacapinlac/earshot) recordings locally. Connect your earshot device, download recordings, and get transcripts — all without sending audio to an external service.
 
 ## What it does
 
@@ -16,7 +16,6 @@ earshot is a Raspberry Pi device that captures conversations. earshot-tui runs o
 
 - macOS or Linux (Windows planned)
 - Python 3.10 or later
-- A [HuggingFace](https://huggingface.co) account and access token (required once for the diarization model)
 
 > **Note:** earshot-tui ships as a single binary. Python is used internally for transcription and diarization — you do not need to manage any Python packages yourself.
 
@@ -36,63 +35,19 @@ chmod +x earshot-tui
 mv earshot-tui /usr/local/bin/
 ```
 
-## First run
+## Run from source
 
-```bash
-earshot-tui
-```
+For local development and manual testing:
 
-On first launch, the app will:
+1. Install **Go** (1.22+), **Python 3.10–3.12** (recommended for PyTorch wheels), **ffmpeg** on your `PATH`, and Git.
+2. Clone the repo and run:
 
-1. Detect Python on your system and set up a local processing environment
-2. Download the transcription and diarization models (~500MB)
-3. Ask for your HuggingFace token to access the diarization model
-4. Scan for a connected earshot device
+   ```bash
+   go run ./cmd/earshot-tui
+   ```
 
-This takes a few minutes once. Subsequent launches are fast.
-
-## Usage
-
-Plug in your earshot device, then launch the app. It will detect the device and show any new recordings. For each recording you can:
-
-- `D` — download and queue for processing
-- `S` — skip (leave on device, don't download)
-- `X` — delete from device
-- `A` — download all remaining
-
-Processing starts automatically after you've made your choices. When complete, open transcripts in your default editor (`$EDITOR`).
-
-To identify speakers, come back to any processed recording, play the audio with `P`, then rename with `R`.
-
-### Key bindings
-
-| Key | Action |
-|-----|--------|
-| `↑` / `↓` or `j` / `k` | Navigate |
-| `Enter` | Select |
-| `ESC` | Back / cancel |
-| `q` | Quit |
-| `C` | Cancel processing |
-
-## Transcripts
-
-Transcripts are saved as Markdown files:
-
-```markdown
-# Recording — 2026-03-31 09:14:22
-
-**Device:** earshot-pi
-**Duration:** 3m 42s
-**Processed:** 2026-03-31 11:05:14
-
----
-
-[00:03] **Alice:** The meeting is called to order.
-
-[00:11] **Bob:** Thanks everyone for joining.
-```
-
-Default location: see `AppDirs` in your platform's standard application data directory.
+3. Complete the first-run setup (venv, `pip install` from the embedded `requirements.txt`, Hugging Face token). The first install can take several minutes and pulls large ML dependencies.
+4. Optional: set `EARSHOT_PROCESSOR_STUB=1` in the environment before launching so the embedded processor returns fake output without running Whisper or pyannote (useful for exercising the TUI and DB flow). Dependencies are still installed if you run the full setup wizard.
 
 ## Platform support
 
