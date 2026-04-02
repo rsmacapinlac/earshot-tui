@@ -47,7 +47,7 @@ configurable destination (see output.md).
 
 There is no `setup_complete` flag — config validity is determined by inspecting
 the fields directly. There is no `huggingface_token` field — speaker diarization
-is in the backlog (see docs/backlog.md).
+requiring a HuggingFace token is deferred to the backlog (see docs/backlog.md).
 
 `device_sources` is keyed by the device's **human-readable name** (the hostname
 read from the device's `preferred_hostname` file, or derived at registration

@@ -56,6 +56,52 @@ if audio is deleted. Not needed for v1 utility.
 
 ---
 
+## Processing Spinner Marker
+
+During active transcription the processing row should show `[⠸]` (spinner character) instead of `[✓]`. Currently both the active and queued rows show `[✓]` in yellow, making it hard to distinguish which recording is actively running vs waiting.
+
+**Deferred requirements:** LIB-3, LIB-8
+
+---
+
+## Cancel Resets Queued Folders to Downloaded
+
+When the user presses `[c] cancel` during processing, remaining queued folders should have their status explicitly reset to `downloaded`. Currently the queued flag is cleared but the persisted `status.json` is not updated, leaving orphaned state.
+
+**Deferred requirements:** LIB-15, PROC-15
+
+---
+
+## Delete Confirmation Dialog
+
+`[d] delete` on the import screen immediately removes folders from the device with no confirmation. A destructive action of this kind should require an explicit confirmation step before executing (UX standards §4).
+
+---
+
+## Device Switching
+
+When multiple device sources are configured in `config.json`, the import screen should allow switching between them at runtime. The device name should show a `▾` indicator and `[s] switch device` should open an inline selector. Selecting a device validates it before switching; an inaccessible device shows an inline error and leaves the current device active.
+
+**Deferred requirements:** IMP-3, IMP-4, IMP-5, IMP-6, IMP-8 (partial), DEV-9
+
+---
+
+## Post-Processing Summary Screen
+
+After all queued recordings finish transcribing, the app should show a summary screen listing what was processed, with the option to open any completed transcript directly. From the summary, the user can navigate to the library or back to import.
+
+**Deferred requirements:** PROC-21, PROC-22, PROC-23
+
+---
+
+## Overall Queue Progress Indicator
+
+During processing, the footer or header should show a "Recording X of Y" counter so the user knows how far through the queue they are. Currently only per-recording progress is shown.
+
+**Deferred requirements:** PROC-14 (partial)
+
+---
+
 ## Drop Folder / Watch Folder
 
 Process `.opus` files placed manually into a folder without a connected device.

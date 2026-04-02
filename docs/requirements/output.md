@@ -34,7 +34,7 @@
   2026-03-31_09-14-22/
     status.json       ← recording state
     recording.opus    ← present if downloaded
-    transcript.md     ← present if completed
+    transcript.md     ← present if transcribed
 ```
 
 - OUT-6: The recordings directory is not configurable. It always resolves to

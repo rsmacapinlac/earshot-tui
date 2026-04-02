@@ -26,18 +26,7 @@ not a background service.
                     └── Config written → continue
     │
     ▼
-[Device check] ← verify first device source in config.json is accessible
-    │
-    ├── Accessible → [Import screen]
-    └── Not accessible → [Library] ← user can still review past recordings
-                              │
-                              └── [i] import → [Import screen]
-                                      │
-                                      └── Device error shown inline if
-                                          device still not accessible
-    │
-    ▼
-[Import screen]
+[Import screen] ← device accessibility checked here inline
     │
     ├── [space] toggle folder selection
     ├── [i] import → downloads selected folders (progress inline)
@@ -49,16 +38,16 @@ not a background service.
 [Library] ← main screen
     │
     ├── [space] select downloaded/failed/interrupted folders
-    ├── [p] process → transcription runs inline
-    ├── [enter] on completed folder → opens transcript in $EDITOR
-    ├── [i] import → [Import screen]
+    ├── [t] transcribe → transcription runs inline
+    ├── [enter] on transcribed folder → opens transcript in $EDITOR
+    ├── [b] back → [Import screen]
     └── [q] quit
 ```
 
 ## Screen Inventory
 
-| Screen       | Entry point                                        | Exit                  |
-|--------------|----------------------------------------------------|-----------------------|
-| Setup wizard | config.json missing or incomplete                  | Config written → device check |
-| Import       | Device accessible on launch, or [i] from Library   | [l] library → Library |
-| Library      | Device not accessible on launch, or [l] from Import | Import / quit         |
+| Screen       | Entry point                                   | Exit                        |
+|--------------|-----------------------------------------------|-----------------------------|
+| Setup wizard | config.json missing or incomplete             | Config written → Import     |
+| Import       | App launch (after preflight), or [b] from Library | [l] library → Library   |
+| Library      | [l] from Import                               | [b] back → Import / [q] quit |

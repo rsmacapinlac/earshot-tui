@@ -9,7 +9,7 @@ to local storage.
 ## Entry Points
 
 - App launch when device is accessible (after preflight and config checks)
-- `[i] import` from the library screen
+- `[b] back` from the library screen
 
 ## Exit Points
 
@@ -21,12 +21,14 @@ to local storage.
 ```
   Device: Pi4-Earshot ▾
 
-  [✓] 2026-03-31 09:14/    3 recordings   8m 45s
-  [ ] 2026-03-30 14:22/    2 recordings  14m 22s
-  [✓] 2026-03-29 08:55/    1 recording    3m 12s
+  [✓] 2026-03-31 09:14   3 recordings   8m 45s
+  [ ] 2026-03-30 14:22   2 recordings  14m 22s
+  [✓] 2026-03-29 08:55   1 recording    3m 12s
 
   ──────────────────────────────────────────────────────
-  [space] select   [i] import   [l] library   [q] quit
+  [space] select   [i] import   [d] delete
+  ──────────────────────────────────────────────────────
+  [l] library   [q] quit
 ```
 
 During import:
@@ -107,8 +109,10 @@ Device not accessible:
 ## Import
 
 - IMP-16: `[i] import` begins downloading all selected folders in list order.
-- IMP-17: `[i] import` is only shown when at least one folder is selected and
-  no download is in progress.
+- IMP-17: `[i] import` and `[d] delete` are only shown when at least one folder
+  is selected and no download is in progress.
+- IMP-17a: `[d] delete` removes the selected folders from the device without
+  importing them. Each deleted folder is immediately removed from the list.
 - IMP-18: During download, the active folder row shows an inline progress bar.
   The checkbox is replaced by `[↓]`.
 - IMP-19: When a folder finishes downloading it is removed from the list. The

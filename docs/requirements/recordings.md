@@ -13,7 +13,7 @@ from the import screen.
 | new         | Present on device, not yet acted on by the TUI               | No — derived at scan time |
 | downloaded  | Copied to local storage, queued for processing               | Yes — `status.json` created |
 | processing  | Transcription in progress                                    | Yes — recovery target on next launch |
-| completed   | Transcript generated successfully                            | Yes |
+| transcribed   | Transcript generated successfully                            | Yes |
 | failed      | Processing attempted but failed                              | Yes — offer retry |
 | interrupted | App closed mid-processing                                    | Yes — offer retry on next launch |
 
@@ -24,17 +24,17 @@ State is persisted in a `status.json` file within each recording's local folder:
   2026-03-31_09-14-22/
     status.json
     recording.opus    ← present if downloaded
-    transcript.md     ← present if completed
+    transcript.md     ← present if transcribed
 ```
 
 ```json
 {
-  "status": "completed",
+  "status": "transcribed",
   "device": "Pi4-Earshot",
   "recorded_at": "2026-03-31T09:14:22Z",
   "duration": 222,
   "downloaded_at": "2026-03-31T11:00:00Z",
-  "completed_at": "2026-03-31T11:05:14Z"
+  "transcribed_at": "2026-03-31T11:05:14Z"
 }
 ```
 
@@ -54,6 +54,7 @@ the device and are re-surfaced on the next session.
 
 ## Post-Download: Device Cleanup
 
-- REC-5: The device copy of a downloaded recording is left untouched. There
-  is no delete-from-device action in v1.
+- REC-5: Import is a copy operation. The source folder on the device is
+  **not** deleted after a successful download. Users may explicitly delete
+  device folders using `[d] delete` on the import screen.
 - REC-6: Deleting local audio files is deferred to v2.

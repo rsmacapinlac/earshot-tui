@@ -17,7 +17,7 @@ transcript. All processing runs locally on the user's computer.
 ## Transcription
 
 - PROC-1: Processing is manually triggered by the user from the library
-  screen. The user selects folders and presses `[p] process`.
+  screen. The user selects folders and presses `[t] transcribe`.
 - PROC-2: Folders are transcribed in the order selected, most recent first.
 - PROC-3: Transcription runs locally — no audio is sent to any external
   service.
@@ -35,8 +35,8 @@ transcript. All processing runs locally on the user's computer.
 ## Completion
 
 - PROC-21: When the processing queue is complete, the app displays a summary
-  list of all recordings just completed with their status (completed/failed).
-- PROC-22: The user selects any completed recording from the summary to open
+  list of all recordings just transcribed with their status (transcribed/failed).
+- PROC-22: The user selects any transcribed recording from the summary to open
   its transcript in `$EDITOR`. Multiple transcripts can be opened in sequence.
 - PROC-23: From the summary, the user can also navigate to the library or
   connect another device.
