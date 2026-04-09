@@ -144,6 +144,11 @@ func TranscriptPath(dir string) string {
 	return filepath.Join(dir, "transcript.md")
 }
 
+// StatusPath returns the path to the recording's status.json file.
+func StatusPath(dir string) string {
+	return filepath.Join(dir, "status.json")
+}
+
 // IsRetryable reports whether a recording in this state can be re-processed.
 func IsRetryable(s State) bool {
 	return s == StateFailed || s == StateInterrupted || s == StateDownloaded

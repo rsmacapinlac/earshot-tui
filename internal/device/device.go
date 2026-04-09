@@ -93,6 +93,17 @@ func Download(src Folder, deviceName string, recordingsDir string, progressFn fu
 		return "", copyErr
 	}
 
+	// Check if status.json exists on device; copy it if present.
+	statusPath := filepath.Join(src.Path, "status.json")
+	if info, err := os.Stat(statusPath); err == nil && !info.IsDir() {
+		if err := copyFile(statusPath, recording.StatusPath(localDir)); err == nil {
+			// Status copied from device; we're done.
+			return localDir, nil
+		}
+		// If copy failed, fall through to creating a new status.
+	}
+
+	// Fall back to creating new status if status.json doesn't exist or copy failed.
 	now := time.Now().UTC()
 	status := &recording.Status{
 		Status:       recording.StateDownloaded,
@@ -101,6 +112,16 @@ func Download(src Folder, deviceName string, recordingsDir string, progressFn fu
 		Duration:     src.Duration,
 		DownloadedAt: &now,
 	}
+
+	// Check if transcript.md exists on device; if so, copy it and mark as transcribed.
+	transcriptPath := filepath.Join(src.Path, "transcript.md")
+	if info, err := os.Stat(transcriptPath); err == nil && !info.IsDir() {
+		if err := copyFile(transcriptPath, recording.TranscriptPath(localDir)); err == nil {
+			status.Status = recording.StateCompleted
+			status.TranscribedAt = &now
+		}
+	}
+
 	if err := recording.SaveStatus(localDir, status); err != nil {
 		os.RemoveAll(localDir)
 		return "", fmt.Errorf("save status: %w", err)
@@ -229,6 +250,26 @@ func copyWithProgress(src, dst string, progressFn func(float64)) error {
 
 	pr := &progressReader{r: in, total: total, fn: progressFn}
 	if _, err := io.Copy(out, pr); err != nil {
+		return err
+	}
+	return out.Sync()
+}
+
+// copyFile copies a file from src to dst without progress tracking.
+func copyFile(src, dst string) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	if _, err := io.Copy(out, in); err != nil {
 		return err
 	}
 	return out.Sync()
