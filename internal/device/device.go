@@ -104,11 +104,11 @@ func Download(src Folder, deviceName string, recordingsDir string, progressFn fu
 	}
 
 	// Fall back to creating new status if status.json doesn't exist or copy failed.
-	now := time.Now().UTC()
+	now := recording.FlexTime{Time: time.Now().UTC()}
 	status := &recording.Status{
 		Status:       recording.StateDownloaded,
 		Device:       deviceName,
-		RecordedAt:   src.Timestamp,
+		RecordedAt:   recording.FlexTime{Time: src.Timestamp},
 		Duration:     src.Duration,
 		DownloadedAt: &now,
 	}

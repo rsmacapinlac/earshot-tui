@@ -7,8 +7,38 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 )
+
+// FlexTime is a time.Time that also accepts ISO 8601 timestamps without a
+// timezone (written by earshot Pi), treating them as local time.
+type FlexTime struct{ time.Time }
+
+var flexFormats = []string{
+	time.RFC3339Nano,
+	time.RFC3339,
+	"2006-01-02T15:04:05.999999999",
+	"2006-01-02T15:04:05",
+}
+
+func (ft *FlexTime) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), `"`)
+	if s == "null" {
+		return nil
+	}
+	for _, layout := range flexFormats {
+		if t, err := time.ParseInLocation(layout, s, time.Local); err == nil {
+			ft.Time = t
+			return nil
+		}
+	}
+	return fmt.Errorf("recording: cannot parse time %q", s)
+}
+
+func (ft FlexTime) MarshalJSON() ([]byte, error) {
+	return ft.Time.MarshalJSON()
+}
 
 // State represents the lifecycle state of a recording.
 type State string
@@ -16,21 +46,29 @@ type State string
 const (
 	StateNew         State = "new"
 	StateDownloaded  State = "downloaded"
+	StateEncoded     State = "encoded" // set by earshot Pi after opus encoding; equivalent to downloaded
 	StateProcessing  State = "processing"
 	StateCompleted   State = "transcribed"
+	StateProcessed   State = "processed" // set by external tools after notes generation; treated as completed
 	StateFailed      State = "failed"
 	StateInterrupted State = "interrupted"
 )
 
 // Status is the data persisted in each recording's status.json.
 type Status struct {
-	Status       State      `json:"status"`
-	Device       string     `json:"device"`
-	RecordedAt   time.Time  `json:"recorded_at"`
-	Duration     float64    `json:"duration"` // seconds
-	DownloadedAt *time.Time `json:"downloaded_at,omitempty"`
-	TranscribedAt *time.Time `json:"transcribed_at,omitempty"`
-	Error        string     `json:"error,omitempty"`
+	Status        State     `json:"status"`
+	Device        string    `json:"device"`
+	RecordedAt    FlexTime  `json:"recorded_at"`
+	Duration      float64   `json:"duration"` // seconds
+	DownloadedAt  *FlexTime `json:"downloaded_at,omitempty"`
+	TranscribedAt *FlexTime `json:"transcribed_at,omitempty"`
+	Error         string    `json:"error,omitempty"`
+
+	// Enrichment fields — populated by calendar matching.
+	Title       string    `json:"title,omitempty"`
+	Attendees   []string  `json:"attendees,omitempty"`
+	Description string    `json:"description,omitempty"`
+	EnrichedAt  *FlexTime `json:"enriched_at,omitempty"`
 }
 
 // Recording pairs a folder path with its persisted status.
@@ -97,7 +135,7 @@ func List(recordingsDir string) ([]Recording, error) {
 		recs = append(recs, Recording{Dir: dir, Status: *s})
 	}
 	sort.Slice(recs, func(i, j int) bool {
-		return recs[i].Status.RecordedAt.After(recs[j].Status.RecordedAt)
+		return recs[i].Status.RecordedAt.After(recs[j].Status.RecordedAt.Time)
 	})
 	return recs, nil
 }
@@ -149,7 +187,12 @@ func StatusPath(dir string) string {
 	return filepath.Join(dir, "status.json")
 }
 
+// IsTranscribed reports whether a recording has been transcribed or fully processed.
+func IsTranscribed(s State) bool {
+	return s == StateCompleted || s == StateProcessed
+}
+
 // IsRetryable reports whether a recording in this state can be re-processed.
 func IsRetryable(s State) bool {
-	return s == StateFailed || s == StateInterrupted || s == StateDownloaded
+	return s == StateFailed || s == StateInterrupted || s == StateDownloaded || s == StateEncoded
 }

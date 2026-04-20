@@ -18,6 +18,9 @@ type Config struct {
 	// macOS default:  ~/Library/Application Support/earshot-tui/recordings/
 	RecordingsDir string `json:"recordings_dir,omitempty"`
 
+	// CalendarDir is the root directory to search recursively for .ics files
+	// used to enrich recordings with meeting title, attendees, and description.
+	CalendarDir string `json:"calendar_dir,omitempty"`
 }
 
 // Load reads config.json from configDir. Returns an empty Config (not an error)

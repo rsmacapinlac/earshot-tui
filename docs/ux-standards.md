@@ -153,11 +153,6 @@ Use `tea.ExecProcess()`. Bubble Tea suspends, hands full terminal control to
 `$EDITOR`, and automatically resumes when the editor exits. No "press any
 key" prompt is needed — resumption is automatic.
 
-Notify the user before handing off:
-```
-  Opening transcript in editor. Return here when done.
-```
-
 ### Audio player — TUI stays live
 
 Use a background `exec.Command`, **not** `tea.ExecProcess`. The TUI remains

@@ -79,6 +79,15 @@ type processingDoneMsg struct {
 	err error
 }
 
+// enrichDoneMsg is sent when calendar enrichment finishes for a recording.
+type enrichDoneMsg struct {
+	dir         string
+	title       string
+	attendees   []string
+	description string
+	err         error // non-nil on failure or no match
+}
+
 // ---- channel-tap helpers ----------------------------------------------------
 // These allow a background goroutine to stream tea.Msg values one at a time
 // through a channel without blocking the Bubble Tea event loop.

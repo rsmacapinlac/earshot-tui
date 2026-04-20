@@ -133,15 +133,15 @@ On every launch, before entering any screen, the app runs a silent preflight
 check in sequence:
 
 1. `ffmpeg` present on `$PATH`
-2. Python 3.10–3.12 present on `$PATH`
-3. venv exists and is healthy (if not: create it and run `pip install`)
-4. faster-whisper `base` model downloaded (if not: download ~150MB with progress)
+2. Python 3.10+ present on `$PATH`
+3. Recordings directory exists and is writable (created if absent)
+4. venv exists and is healthy (if not: create it and run `pip install`)
 
 If all checks pass, the preflight is invisible — the app proceeds directly to
-the connect screen. If any check fails, a specific, actionable error is shown
+the import screen. If any check fails, a specific, actionable error is shown
 and the app does not proceed (see Principle 1 and Principle 10).
 
-Steps 3 and 4 may show progress on first launch or after a broken environment.
+Step 4 may show progress on first launch or after a broken environment.
 No user input is ever required during preflight.
 
 **Guards against:** Abandonment before the app proves its value; silent

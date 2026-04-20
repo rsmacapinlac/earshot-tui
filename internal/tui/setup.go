@@ -22,7 +22,7 @@ type focusedField int
 
 const (
 	fieldName focusedField = iota
-	fieldPath // only shown when device not auto-detected
+	fieldPath              // only shown when device not auto-detected
 )
 
 // setupModel is the Bubble Tea model for the first-time setup wizard.

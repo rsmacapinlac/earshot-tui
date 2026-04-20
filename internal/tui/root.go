@@ -46,7 +46,7 @@ func NewRoot(deps Deps) *Root {
 		r.active = screenPreflight
 		r.preflight = newPreflightModel(deps)
 	}
-	r.library = newLibraryModel(deps)
+	r.library = newLibraryModel(deps, 0, 0)
 	return r
 }
 
@@ -101,7 +101,7 @@ func (r *Root) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return r, r.imp.Init()
 
 	case switchToLibraryMsg:
-		r.library = newLibraryModel(r.deps)
+		r.library = newLibraryModel(r.deps, r.width, r.height)
 		r.active = screenLibrary
 		return r, r.library.Init()
 	}
